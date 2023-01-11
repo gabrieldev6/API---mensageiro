@@ -1,3 +1,0 @@
-sequelize init
-sequelize migration:generate --name create-users
-sequelize db:migrate
