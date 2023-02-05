@@ -1,5 +1,4 @@
 //imports default express
-import { User } from '../entities/User'
 import {Router} from 'express'
 
 
@@ -9,10 +8,12 @@ import { authMiddleware } from '../middlewares/authMiddleware'
 
 const router = Router()
 
-let user: User
 
 router.get("/", (req: any, res: any)=>{
-    res.send({user})
+    res.send("hello word")
+})
+router.post("/create_account", (req: any, res: any) => {
+    return ResponseModel.create(req, res)
 })
 
 router.post("/login", (req:any, res:any)=> {
@@ -20,11 +21,9 @@ router.post("/login", (req:any, res:any)=> {
 
 })
 
-router.post("/create_account", (req: any, res: any) => {
-    return ResponseModel.create(req, res)
-})
+router.use(authMiddleware)
 
-router.get("/home", authMiddleware, (req: any, res: any)=> {
+router.get("/home", (req: any, res: any)=> {
     return ResponseModel.getProfile(req, res)
 })
 

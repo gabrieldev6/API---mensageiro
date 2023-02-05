@@ -95,6 +95,6 @@ export class ResponseModel {
     }
 
     static async getProfile(req: any, res: any){
-        return res.json('dados do usuario logado')
+        return res.json(req.user)
     }
 } 
