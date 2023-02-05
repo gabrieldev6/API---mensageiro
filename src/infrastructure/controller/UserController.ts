@@ -1,9 +1,12 @@
 import { User } from "../../entities/User"
 import { connection } from "../connection/connection"
 import * as bcrypt from "bcrypt"
-import Query from "mysql2/typings/mysql/lib/protocol/sequences/Query"
 import { QueryTypes } from "sequelize"
+import * as jwt from "jsonwebtoken"
+import * as dotenv from 'dotenv'
 
+
+const result = dotenv.config()
 export class ResponseModel {
     sucess: boolean
     data: Array<any> 
@@ -66,20 +69,32 @@ export class ResponseModel {
         const record = await connection.query(
             `SELECT * FROM mensageiro.users WHERE username='${nickname}';`, {type: QueryTypes.SELECT})
         //se nd for retornado ele vai criar a resposta
-        
         try {
+            //vai transformar de JSON para objeto
             const jsonstringfy= JSON.stringify(record[0])
-            const jsonparse = JSON.parse(jsonstringfy)
-            //console.log(`data obtido: ${jsonparse.email}`)
-            
-            response.sucess = await bcrypt.compare(password, jsonparse.password)
-            return res.status(200).json(response)
+            const returnUser = JSON.parse(jsonstringfy)
+            //sempre sera retornado uma unica linha, mas e necessario pegar sempre a primeira
+                
+            response.sucess = await bcrypt.compare(password, returnUser.password)
+                
+            if(response.sucess) {
 
-        } catch(err) {
+                const token = jwt.sign({id: returnUser.id}, process.env.SECRET || '', {expiresIn: '8h'})
+                response.data = [returnUser.id, returnUser.username, returnUser.email, token]
+
+                return res.status(200).json(response)
+
+            }
+
+        } catch (error) {
             response.sucess = false
             response.error = ['not found']
  
             res.status(404).json(response)
         }
+    }
+
+    static async getProfile(req: any, res: any){
+        return res.json('dados do usuario logado')
     }
 } 
